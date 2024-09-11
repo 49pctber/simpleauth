@@ -9,7 +9,7 @@ import (
 
 var Issuer string = "jwtauth"
 var Audience string = Issuer
-var TokenValidDuration time.Duration = 72 * time.Hour
+var TokenValidDuration time.Duration = 7 * 24 * time.Hour
 
 var SigningMethod jwt.SigningMethod = jwt.SigningMethodHS256
 
@@ -45,6 +45,12 @@ func ValidateJWT(tokenString string, secretKey []byte) (*jwt.Token, error) {
 
 	if !token.Valid {
 		return nil, fmt.Errorf("invalid token")
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		if claims["aud"] != Audience {
+			return nil, fmt.Errorf("invalid audience")
+		}
 	}
 
 	return token, nil

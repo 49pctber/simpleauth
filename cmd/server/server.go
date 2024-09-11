@@ -9,18 +9,36 @@ import (
 
 func main() {
 
-	secret_key := []byte("yo mama!!!")
+	config := jwtauth.AuthConfig{}
+	err := config.ReadFromFile()
+	if err != nil {
+		new_config, err := jwtauth.NewAuthConfig()
+		if err != nil {
+			panic(err)
+		}
+		config = *new_config
+
+		user, err := jwtauth.NewUser("bryan", "yo mama")
+		if err != nil {
+			panic(err)
+		}
+
+		config.Users = append(config.Users, *user)
+		config.WriteToFile()
+	}
 
 	server := http.Server{
 		Addr: ":8080",
 	}
 
+	// TODO implement login page
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
-		_, err := r.Cookie("auth_token")
+		_, err = r.Cookie("auth_token")
 
 		if err != nil {
-			token_string, err := jwtauth.GenerateJWT("user", secret_key)
+			token_string, err := jwtauth.GenerateJWT("user", config.Secret)
 			if err != nil {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
@@ -34,11 +52,14 @@ func main() {
 				Path:     "/",
 				SameSite: http.SameSiteStrictMode, // Mitigates CSRF attacks
 			})
-		}
 
-		fmt.Fprintf(w, "Check your cookies.")
+			fmt.Fprintf(w, "Check your cookies. You just got a new one.")
+		} else {
+			fmt.Fprintf(w, "You already have a cookie!")
+		}
 
 	})
 
+	fmt.Printf("Serving at %s\n", server.Addr)
 	fmt.Println(server.ListenAndServe())
 }
