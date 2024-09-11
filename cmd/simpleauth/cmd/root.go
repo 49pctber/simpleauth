@@ -22,7 +22,6 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -32,20 +31,23 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "simpleauth",
-	Short: "",
-	Long:  ``,
+	Short: "Initialize a simpleauth configuration file",
+	Long:  `Initialize a simpleauth configuration file`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fname, err := cmd.Flags().GetString("file")
 		if err != nil {
 			log.Fatalf("error parsing file flag: %v\n", err)
 		}
-		simpleauth.Configure(fname)
 
-		usernames := simpleauth.GetUsernames()
+		_, err = os.Stat(fname)
+		if err == nil {
+			log.Fatalf("%v already exists", fname)
+		}
 
-		fmt.Printf("Information for %s:\n", fname)
-		fmt.Printf("  Number of Existing Users: %v\n", len(usernames))
-		fmt.Printf("  Usernames: %v\n", usernames)
+		err = simpleauth.NewAuthConfig(fname)
+		if err != nil {
+			log.Fatalf("error creating new configuration file: %v\n", err)
+		}
 	},
 }
 

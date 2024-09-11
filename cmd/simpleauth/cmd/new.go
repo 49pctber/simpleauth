@@ -8,8 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var newCmd = &cobra.Command{
-	Use:   "new",
+var addCmd = &cobra.Command{
+	Use:   "add",
 	Short: "Create a new user",
 	Long:  `Create a new user`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -29,7 +29,7 @@ var newCmd = &cobra.Command{
 		}
 
 		if admin {
-			fmt.Println("** NEW ADMINISTRATIVE USER **")
+			fmt.Println("** CREATING ADMINISTRATIVE USER **")
 		}
 
 		fmt.Printf("Username: ")
@@ -64,7 +64,7 @@ var newCmd = &cobra.Command{
 }
 
 func init() {
-	userCmd.AddCommand(newCmd)
+	userCmd.AddCommand(addCmd)
 
-	newCmd.Flags().BoolP("admin", "a", false, "indicates whether a user should be given the admin permission")
+	addCmd.Flags().BoolP("admin", "a", false, "indicates whether a user should be given the admin permission")
 }
