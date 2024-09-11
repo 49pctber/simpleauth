@@ -63,6 +63,7 @@ func logonHandleFunc(w http.ResponseWriter, r *http.Request) {
 					Secure:   true, // Ensures the cookie is sent only over HTTPS
 					Path:     "/",
 					SameSite: http.SameSiteStrictMode, // Mitigates CSRF attacks
+					MaxAge:   365 * 24 * 60 * 60,      // MaxAge is in seconds (1 year)
 				})
 
 				http.Redirect(w, r, redirect, http.StatusTemporaryRedirect)
