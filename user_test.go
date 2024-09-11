@@ -7,7 +7,7 @@ func TestPassword(t *testing.T) {
 	username := "usrnme"
 	password := "secure_passw0rd!"
 
-	user, err := NewUser(username, password)
+	user, err := NewUser(username, password, false)
 	if err != nil {
 		t.Fatal(err)
 	}

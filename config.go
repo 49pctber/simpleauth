@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"slices"
 )
 
 var config AuthConfig
+
+const DefaultConfigFilename string = "simpleauth.json"
 
 var ErrsimpleauthNotConfigured error = errors.New("simpleauth has not been configured yet")
 
@@ -54,8 +57,20 @@ func FindUser(username string) *User {
 	return nil
 }
 
-func AddUser(username, password string) error {
-	return config.AddUser(username, password)
+func GetUsernames() []string {
+	usernames := make([]string, len(config.Users))
+
+	for i, u := range config.Users {
+		usernames[i] = u.Username
+	}
+
+	slices.Sort(usernames)
+
+	return usernames
+}
+
+func AddUser(username, password string, admin bool) error {
+	return config.AddUser(username, password, admin)
 }
 
 func DeleteUser(username string) error {
@@ -106,12 +121,12 @@ func (ac *AuthConfig) ReadFromFile() error {
 	return nil
 }
 
-func (ac *AuthConfig) AddUser(username, password string) error {
+func (ac *AuthConfig) AddUser(username, password string, admin bool) error {
 	if !ac.IsInitialized() {
 		return ErrsimpleauthNotConfigured
 	}
 
-	user, err := NewUser(username, password)
+	user, err := NewUser(username, password, admin)
 	if err != nil {
 		panic(err)
 	}

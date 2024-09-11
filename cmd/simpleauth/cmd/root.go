@@ -22,8 +22,11 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
+	"log"
 	"os"
 
+	"github.com/49pctber/simpleauth"
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +34,19 @@ var rootCmd = &cobra.Command{
 	Use:   "simpleauth",
 	Short: "",
 	Long:  ``,
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		fname, err := cmd.Flags().GetString("file")
+		if err != nil {
+			log.Fatalf("error parsing file flag: %v\n", err)
+		}
+		simpleauth.Configure(fname)
+
+		usernames := simpleauth.GetUsernames()
+
+		fmt.Printf("Information for %s:\n", fname)
+		fmt.Printf("  Number of Existing Users: %v\n", len(usernames))
+		fmt.Printf("  Usernames: %v\n", usernames)
+	},
 }
 
 func Execute() {
@@ -42,5 +57,5 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringP("file", "f", "simpleauth.json", "path to configuration file")
+	rootCmd.PersistentFlags().StringP("file", "f", simpleauth.DefaultConfigFilename, "path to configuration file")
 }

@@ -12,20 +12,20 @@ type User struct {
 	Username     string
 	PasswordHash []byte
 	Salt         []byte
-	Permissions  []string
+	Admin        bool
 }
 
 func ValidateUsername(username string) bool {
 	return regexp.MustCompile(`^[a-zA-Z0-9_]{3,32}$`).MatchString(username)
 }
 
-func NewUser(username, password string) (*User, error) {
+func NewUser(username, password string, admin bool) (*User, error) {
 	user := &User{
 		Username:     username,
 		Id:           make([]byte, 12),
 		Salt:         make([]byte, 32),
 		PasswordHash: make([]byte, 0),
-		Permissions:  make([]string, 0),
+		Admin:        admin,
 	}
 
 	_, err := rand.Read(user.Id)

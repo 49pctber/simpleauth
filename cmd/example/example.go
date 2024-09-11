@@ -43,14 +43,15 @@ func homeHandleFunc(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	// have to specify configuration file
-	err := simpleauth.Configure("config.json")
+	err := simpleauth.Configure(simpleauth.DefaultConfigFilename)
 	if err != nil {
 		panic(err)
 	}
 
 	// configure server to serve on port :8080
 	mux := http.NewServeMux()
-	mux.Handle("/", simpleauth.RequireAuthentication(http.HandlerFunc(homeHandleFunc)))
+	mux.Handle("/", simpleauth.RequireAuthentication(http.HandlerFunc(homeHandleFunc), false))
+	mux.Handle("/admin", simpleauth.RequireAuthentication(http.HandlerFunc(homeHandleFunc), true))
 
 	fmt.Println("Serving on :8080")
 	fmt.Println(http.ListenAndServe(":8080", mux))

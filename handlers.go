@@ -88,7 +88,7 @@ func logonHandleFunc(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func RequireAuthentication(next http.Handler) http.Handler {
+func RequireAuthentication(next http.Handler, admin bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		ctx := r.Context()
@@ -129,6 +129,14 @@ func RequireAuthentication(next http.Handler) http.Handler {
 			// username not found
 			authHandler.ServeHTTP(w, r.WithContext(ctx))
 			return
+		}
+
+		if admin {
+			if !u.Admin {
+				// user is not an admin
+				authHandler.ServeHTTP(w, r.WithContext(ctx))
+				return
+			}
 		}
 
 		ctx = context.WithValue(r.Context(), usernameKey, username)

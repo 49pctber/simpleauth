@@ -23,6 +23,15 @@ var newCmd = &cobra.Command{
 		}
 		simpleauth.Configure(fname)
 
+		admin, err := cmd.Flags().GetBool("admin")
+		if err != nil {
+			log.Fatalf("error parsing admin flag: %v\n", err)
+		}
+
+		if admin {
+			fmt.Println("** NEW ADMINISTRATIVE USER **")
+		}
+
 		fmt.Printf("Username: ")
 		fmt.Scanln(&username)
 		if !simpleauth.ValidateUsername(username) {
@@ -47,7 +56,7 @@ var newCmd = &cobra.Command{
 			log.Fatal("passwords don't match")
 		}
 
-		err = simpleauth.AddUser(username, password)
+		err = simpleauth.AddUser(username, password, admin)
 		if err != nil {
 			log.Fatalf("error creating user: %v\n", err)
 		}
@@ -56,4 +65,6 @@ var newCmd = &cobra.Command{
 
 func init() {
 	userCmd.AddCommand(newCmd)
+
+	newCmd.Flags().BoolP("admin", "a", false, "indicates whether a user should be given the admin permission")
 }
