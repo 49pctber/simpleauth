@@ -1,4 +1,4 @@
-package jwtauth
+package simpleauth
 
 import (
 	"crypto/rand"
@@ -9,17 +9,17 @@ import (
 
 var config AuthConfig
 
-var ErrJwtauthNotConfigured error = errors.New("jwtauth has not been configured yet")
+var ErrsimpleauthNotConfigured error = errors.New("simpleauth has not been configured yet")
 
 type AuthConfig struct {
 	initialized bool
-	Filename    string
+	filename    string
 	Secret      []byte
 	Users       []User
 }
 
 func Configure(filename string) error {
-	config.Filename = filename
+	config.filename = filename
 	err := config.ReadFromFile()
 	if err != nil {
 		return err
@@ -32,7 +32,7 @@ func NewAuthConfig(filename string) error {
 
 	config = AuthConfig{
 		initialized: true,
-		Filename:    filename,
+		filename:    filename,
 		Secret:      make([]byte, 32),
 		Users:       make([]User, 0),
 	}
@@ -45,8 +45,31 @@ func NewAuthConfig(filename string) error {
 	return config.WriteToFile()
 }
 
+func FindUser(username string) *User {
+	for _, u := range config.Users {
+		if u.Username == username {
+			return &u
+		}
+	}
+	return nil
+}
+
 func AddUser(username, password string) error {
 	return config.AddUser(username, password)
+}
+
+func DeleteUser(username string) error {
+	for i, u := range config.Users {
+		if u.Username == username {
+			if i == len(config.Users)-1 {
+				config.Users = config.Users[:len(config.Users)-1]
+			} else {
+				config.Users = append(config.Users[:i], config.Users[i+1:]...)
+			}
+			return config.WriteToFile()
+		}
+	}
+	return errors.New("user not found")
 }
 
 func (ac AuthConfig) IsInitialized() bool {
@@ -55,7 +78,7 @@ func (ac AuthConfig) IsInitialized() bool {
 
 func (ac AuthConfig) WriteToFile() error {
 	if !ac.IsInitialized() {
-		return ErrJwtauthNotConfigured
+		return ErrsimpleauthNotConfigured
 	}
 
 	data, err := json.MarshalIndent(ac, "", "  ")
@@ -64,12 +87,12 @@ func (ac AuthConfig) WriteToFile() error {
 		return err
 	}
 
-	return os.WriteFile(config.Filename, data, 0744)
+	return os.WriteFile(config.filename, data, 0744)
 }
 
 func (ac *AuthConfig) ReadFromFile() error {
 
-	data, err := os.ReadFile(config.Filename)
+	data, err := os.ReadFile(config.filename)
 	if err != nil {
 		return err
 	}
@@ -85,7 +108,7 @@ func (ac *AuthConfig) ReadFromFile() error {
 
 func (ac *AuthConfig) AddUser(username, password string) error {
 	if !ac.IsInitialized() {
-		return ErrJwtauthNotConfigured
+		return ErrsimpleauthNotConfigured
 	}
 
 	user, err := NewUser(username, password)
@@ -93,14 +116,13 @@ func (ac *AuthConfig) AddUser(username, password string) error {
 		panic(err)
 	}
 
-	for i, u := range config.Users {
-		if u.Username == username {
-			config.Users[i].PasswordHash = user.PasswordHash
-			config.Users[i].Salt = user.Salt
-			return config.WriteToFile()
-		}
+	u := FindUser(username)
+	if u != nil {
+		u.PasswordHash = user.PasswordHash
+		u.Salt = user.Salt
+	} else {
+		config.Users = append(config.Users, *user)
 	}
 
-	config.Users = append(config.Users, *user)
 	return config.WriteToFile()
 }

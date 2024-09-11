@@ -1,9 +1,10 @@
-package jwtauth
+package simpleauth
 
 import (
 	"bytes"
 	"crypto"
 	"crypto/rand"
+	"regexp"
 )
 
 type User struct {
@@ -12,6 +13,10 @@ type User struct {
 	PasswordHash []byte
 	Salt         []byte
 	Permissions  []string
+}
+
+func ValidateUsername(username string) bool {
+	return regexp.MustCompile(`^[a-zA-Z0-9_]{3,32}$`).MatchString(username)
 }
 
 func NewUser(username, password string) (*User, error) {

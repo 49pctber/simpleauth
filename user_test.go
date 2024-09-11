@@ -1,4 +1,4 @@
-package jwtauth
+package simpleauth
 
 import "testing"
 
@@ -36,5 +36,51 @@ func TestPassword(t *testing.T) {
 
 	if !user.ValidatePassword(password) {
 		t.Error("password validation failed")
+	}
+}
+
+func TestUsername(t *testing.T) {
+	if have, want := ValidateUsername("a"), false; have != want {
+		t.Errorf("have %v, want %v", have, want)
+	}
+
+	if have, want := ValidateUsername("ab"), false; have != want {
+		t.Errorf("have %v, want %v", have, want)
+	}
+
+	if have, want := ValidateUsername("abc"), true; have != want {
+		t.Errorf("have %v, want %v", have, want)
+	}
+
+	if have, want := ValidateUsername("12345678901234567890123456789012"), true; have != want {
+		t.Errorf("have %v, want %v", have, want)
+	}
+
+	if have, want := ValidateUsername("123456789012345678901234567890123"), false; have != want {
+		t.Errorf("have %v, want %v", have, want)
+	}
+
+	if have, want := ValidateUsername("abc!"), false; have != want {
+		t.Errorf("have %v, want %v", have, want)
+	}
+
+	if have, want := ValidateUsername("abc😂"), false; have != want {
+		t.Errorf("have %v, want %v", have, want)
+	}
+
+	if have, want := ValidateUsername(" abc"), false; have != want {
+		t.Errorf("have %v, want %v", have, want)
+	}
+
+	if have, want := ValidateUsername("abc "), false; have != want {
+		t.Errorf("have %v, want %v", have, want)
+	}
+
+	if have, want := ValidateUsername("ab-c"), false; have != want {
+		t.Errorf("have %v, want %v", have, want)
+	}
+
+	if have, want := ValidateUsername("AaAa00"), true; have != want {
+		t.Errorf("have %v, want %v", have, want)
 	}
 }

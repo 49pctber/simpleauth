@@ -1,4 +1,4 @@
-package jwtauth
+package simpleauth
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var Issuer string = "jwtauth"
+var Issuer string = "simpleauth"
 var Audience string = Issuer
 var TokenValidDuration time.Duration = 7 * 24 * time.Hour
 

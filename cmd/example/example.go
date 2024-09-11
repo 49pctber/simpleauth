@@ -8,7 +8,7 @@ import (
 
 	_ "embed"
 
-	"github.com/49pctber/jwtauth"
+	"github.com/49pctber/simpleauth"
 )
 
 //go:embed greeting.tmpl
@@ -16,7 +16,7 @@ var greeting string
 
 func homeHandleFunc(w http.ResponseWriter, r *http.Request) {
 
-	username := jwtauth.GetUser(r)
+	username := simpleauth.GetUser(r)
 
 	data := struct {
 		Username string
@@ -43,14 +43,14 @@ func homeHandleFunc(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	// have to specify configuration file
-	err := jwtauth.Configure("config.json")
+	err := simpleauth.Configure("config.json")
 	if err != nil {
 		panic(err)
 	}
 
 	// configure server to serve on port :8080
 	mux := http.NewServeMux()
-	mux.Handle("/", jwtauth.RequireAuthentication(http.HandlerFunc(homeHandleFunc)))
+	mux.Handle("/", simpleauth.RequireAuthentication(http.HandlerFunc(homeHandleFunc)))
 
 	fmt.Println("Serving on :8080")
 	fmt.Println(http.ListenAndServe(":8080", mux))

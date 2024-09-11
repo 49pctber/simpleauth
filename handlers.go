@@ -1,4 +1,4 @@
-package jwtauth
+package simpleauth
 
 import (
 	"context"
@@ -44,12 +44,9 @@ func logonHandleFunc(w http.ResponseWriter, r *http.Request) {
 		password := r.PostFormValue("password")
 		redirect = r.PostFormValue("redirect")
 
-		for _, u := range config.Users {
+		u := FindUser(username)
 
-			if u.Username != username {
-				continue
-			}
-
+		if u != nil {
 			if u.ValidatePassword(password) {
 
 				token_string, err := GenerateJWT(username, config.Secret)
@@ -71,8 +68,6 @@ func logonHandleFunc(w http.ResponseWriter, r *http.Request) {
 				http.Redirect(w, r, redirect, http.StatusTemporaryRedirect)
 
 			}
-
-			break
 		}
 
 		message = "Incorrect username or password"
@@ -101,7 +96,7 @@ func RequireAuthentication(next http.Handler) http.Handler {
 		ctx = context.WithValue(ctx, usernameKey, nil)
 
 		if !config.IsInitialized() {
-			log.Println(ErrJwtauthNotConfigured)
+			log.Println(ErrsimpleauthNotConfigured)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
@@ -128,16 +123,16 @@ func RequireAuthentication(next http.Handler) http.Handler {
 			return
 		}
 
-		for _, u := range config.Users {
-			if u.Username == username {
-				ctx = context.WithValue(r.Context(), usernameKey, username)
-				next.ServeHTTP(w, r.WithContext(ctx))
-				return
-			}
+		u := FindUser(username)
+
+		if u == nil {
+			// username not found
+			authHandler.ServeHTTP(w, r.WithContext(ctx))
+			return
 		}
 
-		// user not found
-		authHandler.ServeHTTP(w, r.WithContext(ctx))
+		ctx = context.WithValue(r.Context(), usernameKey, username)
+		next.ServeHTTP(w, r.WithContext(ctx))
 
 	})
 }

@@ -1,4 +1,4 @@
-module github.com/49pctber/jwtauth
+module github.com/49pctber/simpleauth
 
 go 1.22.3
 
